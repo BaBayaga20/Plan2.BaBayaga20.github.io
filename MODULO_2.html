@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador Modulo 4</title>
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .card { margin-bottom: 20px; }
+    .correcta { color: green; font-weight: bold; }
+    .incorrecta { color: red; font-weight: bold; }
+
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('imgs/UNAM.jpg');
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: contain;
+        opacity: 0.1;        /* solo la imagen */
+        z-index: -1;          /* queda detrás del contenido */
+    }
+
+  
+</style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h2 class="mb-4 text-center">Formulario Practico FODA </h2>
+    <p style="font-size: 18px;"> Intrucciones: Analice los diez escenarios planteados en el formulario y determine a qué caso corresponde cada uno.</p>
+    <form id="quizForm">
+      <div id="preguntasContainer"></div>
+      <button type="submit" class="btn btn-primary w-100 mt-3">Enviar Respuestas</button>
+    </form>
+    <div id="resultado" class="mt-4"></div>
+  </div>
+
+  <script>
+    const preguntas = [
+      { texto: "Contar con instalaciones de calidad", respuesta: "Fortaleza" },
+      { texto: "Disponer de un cuerpo docente calificado y con experiencia", respuesta: "Fortaleza" },
+      { texto: "Tener un ambiente de aprendizaje positivo e inclusivo", respuesta: "Fortaleza" },
+      { texto: "Existencia de nuevas tendencias globales en educación", respuesta: "Oportunidad" },
+      { texto: "Posibilidad de invertir en tecnologías de última generación", respuesta: "Oportunidad" },
+      { texto: "Financiamiento muy limitado para proyectos educativos", respuesta: "Debilidad" },
+      { texto: "Actuales procesos burocráticos muy extensos y complejos", respuesta: "Debilidad" },
+      { texto: "Posible disminución en la matrícula estudiantil", respuesta: "Amenaza" },
+      { texto: "Pronostico de bajos resultados en indicadores educativos", respuesta: "Amenaza" },
+      { texto: "Prediccion del Aumento en la brecha Digital ", respuesta: "Amenaza" }
+    ];
+
+    const opciones = ["Fortaleza", "Oportunidad", "Debilidad", "Amenaza"];
+    let preguntasMezcladas = [];
+
+    // Mezclar array (Fisher-Yates shuffle)
+    function mezclar(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Renderizar preguntas en orden aleatorio
+    function renderPreguntas() {
+      const container = document.getElementById("preguntasContainer");
+      container.innerHTML = "";
+      preguntasMezcladas = mezclar([...preguntas]);
+
+      preguntasMezcladas.forEach((pregunta, index) => {
+        const card = document.createElement("div");
+        card.className = "card p-3";
+        card.innerHTML = `
+          <p><strong>${index + 1}. ${pregunta.texto}</strong></p>
+          ${opciones.map(op => `
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="pregunta${index}" value="${op}" required>
+              <label class="form-check-label">${op}</label>
+            </div>
+          `).join("")}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Validar respuestas
+    document.getElementById("quizForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      const inputs = document.querySelectorAll("input[type=radio]:checked");
+      let correctas = 0;
+      let desglose = "";
+
+      preguntasMezcladas.forEach((pregunta, index) => {
+        const seleccionada = document.querySelector(`input[name=pregunta${index}]:checked`);
+        const respuestaUsuario = seleccionada ? seleccionada.value : "No contestada";
+        const esCorrecta = respuestaUsuario === pregunta.respuesta;
+
+        if (esCorrecta) correctas++;
+
+        desglose += `
+          <div class="mt-2">
+            <p><strong>${index + 1}. ${pregunta.texto}</strong></p>
+            <p>Tu respuesta: <span class="${esCorrecta ? 'correcta' : 'incorrecta'}">${respuestaUsuario}</span></p>
+            ${!esCorrecta ? `<p>Respuesta correcta: <span class="correcta">${pregunta.respuesta}</span></p>` : ""}
+          </div>
+          <hr>
+        `;
+      });
+
+      document.getElementById("resultado").innerHTML = `
+        <h4>Resultados:</h4>
+        <p><strong>Calificación final: ${(correctas*10)/preguntas.length}</strong></p>
+        ${desglose}
+      `;
+    });
+
+    // Inicializar
+    renderPreguntas();
+  </script>
+</body>
+</html>
